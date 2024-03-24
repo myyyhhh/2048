@@ -1,0 +1,198 @@
+#include<iostream>
+#include <Windows.h>
+#include<random>
+#include <conio.h>
+#include <iomanip>
+using namespace std;
+int x[4][4] = { 0 };
+int *y[4] ;
+//a=0列，1行
+//b=0右下，1左上
+void read(int num, int a, int b);
+void cal(int num);
+void MoveNumber(int a, int b);
+void END(int a) ;
+void dayin();
+int GetZero();
+void StartGame();
+void GameControl();
+void GetNewNumber();
+void Zero();
+void calll();
+
+int main() {
+	StartGame();
+	while (1) {
+		dayin();
+		GameControl();
+		GetNewNumber();
+		//cout << endl;
+		//cout << *y[0] <<*y[1] << *y[2] << *y[3] << endl;
+	}
+	int a[4]{ 2,0,0,4 };
+	for (int i = 0; i < 4; i++) {
+		y[i] = &a[i];
+	}
+	//cal(2);
+	//calll();
+	//out << a[0] << a[1] << a[2] << a[3];
+
+
+	return 0;
+}
+
+void END(int a) {
+	if (a == 1) {
+		cout << "WIN" << endl;
+		StartGame();
+		dayin();
+	}
+	if (a == 2) {
+		StartGame();
+		dayin();
+	}
+	if (a == 3) {
+		cout << "DEFAET" << endl;
+		StartGame();
+		dayin();
+	}
+}
+void GameControl() {//游戏控制
+	char key = _getch();
+	if (key=='W') {
+		MoveNumber(0, 1);
+	}
+	if (key == 'S') {
+		MoveNumber(0, 0);
+	}
+	if (key == 'A') {
+		MoveNumber(1, 1);
+	}
+	if (key == 'D') {
+		MoveNumber(1, 0);
+	}
+	if (key == 'R') {//重开游戏
+		END(2);
+	}
+}
+void dayin() {
+	int flag = 0;
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			if (x[i][j] == 2048)flag = 1;
+			cout << setw(5) << setfill(' ') << x[i][j] << " ";
+		}
+		cout << endl;
+	}
+	if (flag) {
+		END(flag);
+	}
+	cout << endl;
+}
+void StartGame() {
+	cout << "GAME START"<<endl;
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			x[i][j] = 0;
+		}
+	}
+	GetNewNumber();
+	GetNewNumber();
+}
+void GetNewNumber() {
+
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	int n = GetZero();
+	if (n == 0) {
+		END(3);
+		return;
+	}
+	std::uniform_int_distribution<int> distrib1(1, n);
+	int b = distrib1(gen);
+	std::uniform_int_distribution<int> distrib2(0, 1);
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			if (x[i][j] == 0) {
+				b--;
+				if (b == 0) x[i][j] = distrib2(gen) * 2 + 2;
+			}
+		}
+	}
+}
+void read(int num, int a, int b) {
+	//a=0列，1行
+	//b=0右下，1左上
+	if (a) {//x[num][]
+		if (b) {
+			for (int i = 3; i >= 0; i--) {
+				y[3 - i] = &x[num][i];
+			}
+		}
+		else {
+			for (int i = 0; i < 4; i++) {
+				y[i] = &x[num][i];
+			}
+		}
+	}
+	else {
+		if (b) {
+			for (int i = 3; i >= 0; i--) {
+				y[3 - i] = &x[i][num];
+			}
+		}
+		else {
+			for (int i = 0; i < 4; i++) {
+				y[i] = &x[i][num];
+			}
+		}
+	}
+}
+int GetZero() {
+	int a = 0;
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			if (x[i][j] == 0) {
+				a++;
+			}
+		}
+	}
+	return a;
+}
+void MoveNumber(int a, int b) {
+	for (int i = 0; i < 4; i++) {
+		read(i, a, b);
+		calll();
+		
+	}
+}
+void cal(int num) {
+	//cout << num << endl;
+	if (num < 0 || num >= 3) {
+		return; // 边界条件，防止数组越界
+	}
+	if (*y[num] == *y[num + 1]) {  // 判断当前位置和下一个位置的值是否相等
+		*y[num + 1] *= 2;  // 如果相等，将下一个位置的值乘以2
+		*y[num] = 0;  // 当前位置的值置为0
+		Zero();
+	}
+	cal(num - 1);  // 继续递归处理前一个位置
+}
+void Zero() {
+	for (int i = 3; i > -1; i--) {
+		if (*y[i] == 0)
+			for (int j = i; j > -1; j--) {
+				if (*y[j] != 0) {
+					//cout << j << endl;
+					*y[i] = *y[j];
+					*y[j] = 0;
+					i = j + 1;
+					break;
+				}
+			}
+	}
+}
+void calll() {
+	Zero();
+	cal(2);
+}
