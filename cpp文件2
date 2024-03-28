@@ -1,0 +1,291 @@
+#include<iostream>
+#include <Windows.h>
+#include<random>
+#include <conio.h>
+#include <iomanip>
+#include<graphics.h> 
+#include<stdio.h>
+
+using namespace std;
+int x[4][4] = { 0 };
+int *y[4] ;
+
+struct Image {
+	IMAGE background;
+	IMAGE _2;
+	IMAGE _4;
+	IMAGE _8;
+	IMAGE _16;
+	IMAGE _32;
+	IMAGE _64;
+	IMAGE _128;
+	IMAGE _256;
+	IMAGE _512;
+	IMAGE _1024;
+	IMAGE _2048;
+
+}image;
+
+//a=0列，1行
+//b=0右下，1左上
+bool MoveDone = 1;
+
+
+void read(int num, int a, int b);
+void cal(int num);
+void MoveNumber(int a, int b);
+void END(int a) ;
+void PrintAll();
+int GetZero();
+void StartGame();
+void GameControl();
+void GetNewNumber();
+void Zero();
+void Move4();
+void Cheek();
+void gameinit() {
+	initgraph(800, 800/*,SHOWCONSOLE*/);
+	loadimage(&image.background, "./images/background.png");
+	//putimage(0, 0, &image.background);
+	loadimage(&image._2, "./images/2.png");
+	loadimage(&image._4, "./images/4.png");
+	loadimage(&image._8, "./images/8.png");
+	loadimage(&image._16, "./images/16.png");
+	loadimage(&image._32, "./images/32.png");
+	loadimage(&image._64, "./images/64.png");
+	loadimage(&image._128, "./images/128.png");
+	loadimage(&image._256, "./images/256.png");
+	loadimage(&image._512, "./images/512.png");
+	loadimage(&image._1024, "./images/1024.png");
+	loadimage(&image._2048, "./images/2048.png");
+}
+
+
+void putimagee(int a,int potx,int poty) {
+	if (a == 2)putimage(potx*200,poty*200, &image._2);
+	else if (a == 4)putimage(potx * 200, poty * 200, &image._4);
+	else if (a == 8)putimage(potx * 200, poty * 200, &image._8);
+	else if (a == 16)putimage(potx * 200, poty * 200, &image._16);
+	else if (a == 32)putimage(potx * 200, poty * 200, &image._32);
+	else if (a == 64)putimage(potx * 200, poty * 200, &image._64);
+	else if (a == 128)putimage(potx * 200, poty * 200, &image._128);
+	else if (a == 256)putimage(potx * 200, poty * 200, &image._256);
+	else if (a == 512)putimage(potx * 200, poty * 200, &image._512);
+	else if (a == 1024)putimage(potx * 200, poty * 200, &image._1024);
+	else if (a == 2048)putimage(potx * 200, poty * 200, &image._2048);
+	
+
+}
+
+int main() {
+	
+	gameinit();
+	StartGame();
+	cleardevice();
+	putimage(0, 0, &image.background);
+	PrintAll();
+	while (1) {
+		GameControl();
+		if (MoveDone) {
+			GetNewNumber();
+			cleardevice();
+			putimage(0, 0, &image.background);
+			PrintAll();
+			
+		}
+		Cheek();
+		
+	}
+	/*int a[4] = { 1,2,3,4};
+	y[0] = a; y[1] = a + 1, y[2] = a + 2, y[3] = a + 3;
+	Move4();
+	cout << a[0] << a[1] << a[2] << a[3];*/
+
+	return 0;
+}
+
+void END(int a) {
+	if (a == 1) {
+		cout << "WIN" << endl;
+		StartGame();
+		PrintAll();
+	}
+	if (a == 2) {
+		StartGame();
+		PrintAll();
+	}
+	if (a == 3) {
+		cout << "DEFAET" << endl;
+		char key = _getch();
+		if (key=='R' || key == 'r') {
+			StartGame();
+			PrintAll();
+		}
+	}
+}
+void GameControl() {//游戏控制
+	MoveDone = 0;
+	char key = _getch();
+	if (key == 'W' || key == 'w') {
+		MoveNumber(0, 1);
+	}
+	else if (key == 'S' || key == 's') {
+		MoveNumber(0, 0);
+	}
+	else if (key == 'A' || key == 'a') {
+		MoveNumber(1, 1);
+	}
+	else if (key == 'D' || key == 'd') {
+		MoveNumber(1, 0);
+	}
+	else if (key == 'R' || key == 'r') {//重开游戏
+		END(2);
+	}
+	else GameControl();
+}
+void PrintAll() {
+	int flag = 0;
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			if (x[i][j] == 2048)flag = 1;
+			putimagee(x[i][j], j, i);
+		}
+	}
+	if (flag) {
+		END(flag);
+	}
+	
+}
+void StartGame() {
+	//cout << "GAME START"<<endl;
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			x[i][j] = 0;
+		}
+	}
+	GetNewNumber();
+	GetNewNumber();
+}
+
+void GetNewNumber() {
+
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	int n = GetZero();
+	if (n == 0) {
+		END(3);
+		return;
+	}
+	std::uniform_int_distribution<int> distrib1(1, n);
+	int b = distrib1(gen);
+	std::uniform_int_distribution<int> distrib2(0, 1);
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			if (x[i][j] == 0) {
+				b--;
+				if (b == 0) x[i][j] = distrib2(gen) * 2 + 2;
+			}
+		}
+	}
+}
+void read(int num, int a, int b) {
+	//a=0列，1行
+	//b=0右下，1左上
+	if (a) {//x[num][]
+		if (b) {
+			for (int i = 3; i >= 0; i--) {
+				y[3 - i] = &x[num][i];
+			}
+		}
+		else {
+			for (int i = 0; i < 4; i++) {
+				y[i] = &x[num][i];
+			}
+		}
+	}
+	else {
+		if (b) {
+			for (int i = 3; i >= 0; i--) {
+				y[3 - i] = &x[i][num];
+			}
+		}
+		else {
+			for (int i = 0; i < 4; i++) {
+				y[i] = &x[i][num];
+			}
+		}
+	}
+}
+int GetZero() {
+	int a = 0;
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			if (x[i][j] == 0) {
+				a++;
+			}
+		}
+	}
+	return a;
+}
+void MoveNumber(int a, int b) {
+	for (int i = 0; i < 4; i++) {
+		read(i, a, b);
+		Move4();
+	}
+}
+void cal(int num) {
+	if (num < 0 || num >= 3) {
+		return; // 边界条件，防止数组越界
+	}
+	if (*y[num] == *y[num + 1]&&*y[num]!=0) {  // 判断当前位置和下一个位置的值是否相等
+		MoveDone = 1;
+		*y[num + 1] *= 2;  // 下一个位置的值乘以2
+		*y[num] = 0;  // 当前位置的值置为0
+		Zero();
+	}
+	cal(num - 1);  // 继续递归处理前一个位置
+}
+void Zero() {
+	for (int i = 3; i > -1; i--) {
+		if (*y[i] == 0)
+			for (int j = i; j > -1; j--) {
+				if (*y[j] != 0) {
+					MoveDone = 1;				
+					*y[i] = *y[j];
+					*y[j] = 0;
+					//i = j + 1;
+					break;
+				}
+			}
+	}
+}
+void Move4() {
+	Zero();
+	cal(2);
+}
+void Cheek() {
+	//bool contin = 0;
+	if (GetZero == 0) {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				
+				if (i < 3) {
+					if (x[i][j] == x[i + 1][j])return;
+				}
+				if (i > 0) {
+					if (x[i][j] == x[i - 1][j])return;
+				}
+				if (j > 0) {
+					if (x[i][j] == x[i][j-1])return;
+				}
+				if (j < 3) {
+					if (x[i][j] == x[i][j + 1])return;
+				}
+			}
+		}
+	}
+	else {
+		return;
+	}
+	END(3);
+}
